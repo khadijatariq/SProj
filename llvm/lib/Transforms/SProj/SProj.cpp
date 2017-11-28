@@ -45,23 +45,32 @@ namespace {
 
       for (Module::iterator modI = M.begin(), modE = M.end(); modI != modE; ++modI) {
         if (!(modI->isDeclaration() || (modI->getName() == "main"))){
-          IRBuilder<> builder(&modI->getEntryBlock(), modI->getEntryBlock().begin());
-          Value *strPtr1 = builder.CreateGlobalStringPtr(modI->getName());
-          std::string ret_type;
-          raw_string_ostream rsor(ret_type);
-          modI->getReturnType()->print(rsor);
-          Value *strPtr2 = builder.CreateGlobalStringPtr(rsor.str());
-          Value* args1[] = {strPtr1,strPtr2};
-          builder.CreateCall(func_rtype, args1);
-          for (Function::arg_iterator argI = modI->arg_begin(), argE = modI->arg_end(); argI != argE; ++argI) {
-            std::string input_type;
-            raw_string_ostream rsoi(input_type);
-            argI->getType()->print(rsoi);
-            strPtr2 = builder.CreateGlobalStringPtr(rsoi.str());
-            Value* args2[] = {strPtr1,strPtr2};
-            builder.CreateCall(func_itype, args2);
-            Value* args3[] = {strPtr1,argI};
-            builder.CreateCall(func_int, args3);
+          for (BasicBlock &BB : *modI) {
+            for (Instruction &I : BB) {
+              if (auto* op = dyn_cast<ReturnInst>(&I)) {
+                IRBuilder<> builder(op);
+                //IRBuilder<> builder(&modI->getEntryBlock(), modI->getEntryBlock().begin());
+                Value *strPtr1 = builder.CreateGlobalStringPtr(modI->getName());
+                std::string ret_type;
+                raw_string_ostream rsor(ret_type);
+                modI->getReturnType()->print(rsor);
+                Value *strPtr2 = builder.CreateGlobalStringPtr(rsor.str());
+                Value* args1[] = {strPtr1,strPtr2};
+                builder.CreateCall(func_rtype, args1);
+                for (Function::arg_iterator argI = modI->arg_begin(), argE = modI->arg_end(); argI != argE; ++argI) {
+                  std::string input_type;
+                  raw_string_ostream rsoi(input_type);
+                  argI->getType()->print(rsoi);
+                  strPtr2 = builder.CreateGlobalStringPtr(rsoi.str());
+                  Value* args2[] = {strPtr1,strPtr2};
+                  builder.CreateCall(func_itype, args2);
+                  Value* args3[] = {strPtr1,argI};
+                  builder.CreateCall(func_int, args3);
+                }
+                Value* args4[] = {strPtr1,op->getReturnValue()};
+                builder.CreateCall(func_int, args4);
+              }
+            }
           }
         }
       }
