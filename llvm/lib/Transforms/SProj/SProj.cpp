@@ -16,65 +16,54 @@ namespace {
       FuncTy_1_args.push_back(PointerTy_1);
       FuncTy_1_args.push_back(PointerTy_1);
 
+      FunctionType* FuncTy_1 = FunctionType::get(
+        /*Result=*/Type::getVoidTy(M.getContext()),
+        /*Params=*/FuncTy_1_args,
+        /*isVarArg=*/false);
+      Constant *c1 = M.getOrInsertFunction("_Z12getInputTypePcS_",
+          FuncTy_1);
+      Function* func_itype = cast<Function>(c1);
+
       FunctionType* FuncTy_2 = FunctionType::get(
         /*Result=*/Type::getVoidTy(M.getContext()),
         /*Params=*/FuncTy_1_args,
         /*isVarArg=*/false);
-      Constant *c2 = M.getOrInsertFunction("_Z12getInputTypePcS_",
+      Constant *c2 = M.getOrInsertFunction("_Z13getReturnTypePcS_",
           FuncTy_2);
-      Function* func_itype = cast<Function>(c2);
-
-      FunctionType* FuncTy_3 = FunctionType::get(
-        /*Result=*/Type::getVoidTy(M.getContext()),
-        /*Params=*/FuncTy_1_args,
-        /*isVarArg=*/false);
-      Constant *c3 = M.getOrInsertFunction("_Z13getReturnTypePcPc",
-          FuncTy_3);
-      Function* func_rtype = cast<Function>(c3);
+      Function* func_rtype = cast<Function>(c2);
 
       std::vector<Type*>FuncTy_2_args;
       FuncTy_2_args.push_back(PointerTy_1);
       FuncTy_2_args.push_back(IntegerType::get(M.getContext(), 32));
-      FunctionType* FuncTy_4 = FunctionType::get(
+      FunctionType* FuncTy_3 = FunctionType::get(
         /*Result=*/Type::getVoidTy(M.getContext()),
         /*Params=*/FuncTy_2_args,
         /*isVarArg=*/false);
-      Constant *c4 = M.getOrInsertFunction("_Z6getIntPci",
-          FuncTy_4);
-      Function* func_int = cast<Function>(c4);
+      Constant *c3 = M.getOrInsertFunction("_Z6getIntPci",
+          FuncTy_3);
+      Function* func_int = cast<Function>(c3);
 
       for (Module::iterator modI = M.begin(), modE = M.end(); modI != modE; ++modI) {
         if (!(modI->isDeclaration() || (modI->getName() == "main"))){
+          IRBuilder<> builder(&modI->getEntryBlock(), modI->getEntryBlock().begin());
+          Value *strPtr1 = builder.CreateGlobalStringPtr(modI->getName());
+          std::string ret_type;
+          raw_string_ostream rsor(ret_type);
+          modI->getReturnType()->print(rsor);
+          Value *strPtr2 = builder.CreateGlobalStringPtr(rsor.str());
+          Value* args1[] = {strPtr1,strPtr2};
+          builder.CreateCall(func_rtype, args1);
           for (Function::arg_iterator argI = modI->arg_begin(), argE = modI->arg_end(); argI != argE; ++argI) {
-            IRBuilder<> builder(inst_begin(modI));
-            Value *strPtr1 = builder.CreateGlobalStringPtr(modI->getName());
-            std::string type_str;
-            raw_string_ostream rso(type_str);
-            argI->getType()->print(rso);
-            Value *strPtr2 = builder.CreateGlobalStringPtr(rso.str());
-            Value* args1[] = {strPtr1,strPtr2};
-            builder.CreateCall(func_itype, args1);
-            Value* args2[] = {strPtr1,argI};
-            builder.CreateCall(func_int, args2);
+            std::string input_type;
+            raw_string_ostream rsoi(input_type);
+            argI->getType()->print(rsoi);
+            strPtr2 = builder.CreateGlobalStringPtr(rsoi.str());
+            Value* args2[] = {strPtr1,strPtr2};
+            builder.CreateCall(func_itype, args2);
+            Value* args3[] = {strPtr1,argI};
+            builder.CreateCall(func_int, args3);
           }
         }
-        // for (BasicBlock &funcI : *modI) {
-        //   for (Instruction &I : funcI) {
-        //     errs() << I.getOpcode() << "\n";
-        //     if (I.getOpcode() == 31) {
-        //       errs() << "here "<<I.getOpcodeName()<<"\n";
-        //       // Insert *after* `op`.
-        //       IRBuilder<> builder(&I);
-        //       builder.SetInsertPoint(&funcI, ++builder.GetInsertPoint());
-
-        //       // Insert a call to our function.
-        //       Value* args[] = {&I};
-        //       builder.CreateCall(func_add, args);
-
-        //       return false;
-        //     }
-        //   }
-        // }
       }
       return false;
     }
