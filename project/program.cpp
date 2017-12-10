@@ -7,5 +7,6 @@ int gcd (int n1, int n2) {
 
 int main() {
     printf("%d\n", gcd(72, 32));
+    printf("%d\n", gcd(72, 32));
     return 0;
 }

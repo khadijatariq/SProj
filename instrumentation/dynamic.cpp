@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include "json.hpp"
 
 using namespace std;
@@ -31,5 +32,5 @@ void getInt(char* fname, int input) {
 	long l = j[s1]["count"];
 	string s2 = "set"+to_string(l);
 	j[s1][s2]["input"].push_back(input);
-	std::cout << j.dump(4) << std::endl;
+	cout << j.dump(4) << endl;
 }
