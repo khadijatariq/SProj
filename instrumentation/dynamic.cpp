@@ -7,30 +7,27 @@ using json = nlohmann::json;
 
 json j;
 
-void getInputType(char* fname, char* type) {
+void getSet(char* fname, int input1, int input2, int output) {
 	string s1(fname);
-	string s2(type);
-	if (j[s1]["count"] == 1) {
-		j[s1]["input_type"].push_back(s2);
+	if (j.find(s1) == j.end()) {
+		j[s1]["count"] = 0;
 	}
-}
-
-void getReturnType(char* fname, char* type) {
-	string s1(fname);
-	string s2(type);
-	if (j.find(s1) != j.end()) {
-		int count = j[s1]["count"];
-		j[s1]["count"] = count + 1;
-	} else {
-		j[s1]["return_type"] = s2;
-		j[s1]["count"] = 1;
-	}
-}
-
-void getInt(char* fname, int input) {
-	string s1(fname);
+	int count = j[s1]["count"];
+	j[s1]["count"] = count + 1;
 	long l = j[s1]["count"];
-	string s2 = "set"+to_string(l);
-	j[s1][s2]["input"].push_back(input);
+	string s2 = "set"+to_string(count);
+	j[s1][s2]["input"].push_back(input1);
+	j[s1][s2]["input"].push_back(input2);
+	j[s1][s2]["output"].push_back(output);
 	cout << j.dump(4) << endl;
+}
+
+void initialize() {
+	ifstream i("info.json");
+	i >> j;
+}
+
+void store() {
+	ofstream o("info.json");
+	o << setw(4) << j << endl;
 }
