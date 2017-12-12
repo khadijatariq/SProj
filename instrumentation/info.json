@@ -1,0 +1,26 @@
+{
+    "_Z3gcdii": {
+        "count": 3,
+        "set1": {
+            "input": [
+                8,
+                0
+            ],
+            "output": 8
+        },
+        "set2": {
+            "input": [
+                32,
+                8
+            ],
+            "output": 8
+        },
+        "set3": {
+            "input": [
+                72,
+                32
+            ],
+            "output": 8
+        }
+    }
+}
